@@ -17,32 +17,24 @@ blueprint:
       selector:
         entity:
           domain: light
-          multiple: false
-          optional: true  # Make it optional
     button_2_light:
       name: Button 2 Light
       description: Select the light to control with Button 2 (optional).
       selector:
         entity:
           domain: light
-          multiple: false
-          optional: true  # Make it optional
     button_3_light:
       name: Button 3 Light
       description: Select the light to control with Button 3 (optional).
       selector:
         entity:
           domain: light
-          multiple: false
-          optional: true  # Make it optional
     button_4_light:
       name: Button 4 Light
       description: Select the light to control with Button 4 (optional).
       selector:
         entity:
           domain: light
-          multiple: false
-          optional: true  # Make it optional
     hold_brightness:
       name: Hold Brightness
       description: Brightness level to set when the button is held.
@@ -80,142 +72,142 @@ variables:
   transition_time: !input transition_time
 
 action:
-  # Button 1 actions
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '001' and button_action == 'KeyPressed' }}"
-    sequence:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: !input button_1_light
-                state: "on"
-            sequence:
-              - service: light.turn_off
-                data:
-                  entity_id: !input button_1_light
-                  transition: "{{ transition_time }}"
-          - conditions:
-              - condition: state
-                entity_id: !input button_1_light
-                state: "off"
-            sequence:
-              - service: light.turn_on
-                data:
-                  entity_id: !input button_1_light
-                  brightness_pct: 100
-                  transition: "{{ transition_time }}"
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '001' and button_action == 'KeyHeldDown' }}"
-    sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input button_1_light
-          brightness_pct: !input hold_brightness
-          transition: "{{ transition_time }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '001' and button_action == 'KeyPressed' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_1_light
+                    state: "on"
+                sequence:
+                  - service: light.turn_off
+                    data:
+                      entity_id: !input button_1_light
+                      transition: "{{ transition_time }}"
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_1_light
+                    state: "off"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      entity_id: !input button_1_light
+                      brightness_pct: 100
+                      transition: "{{ transition_time }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '001' and button_action == 'KeyHeldDown' }}"
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input button_1_light
+              brightness_pct: !input hold_brightness
+              transition: "{{ transition_time }}"
 
-  # Button 2 actions
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '002' and button_action == 'KeyPressed' }}"
-    sequence:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: !input button_2_light
-                state: "on"
-            sequence:
-              - service: light.turn_off
-                data:
-                  entity_id: !input button_2_light
-                  transition: "{{ transition_time }}"
-          - conditions:
-              - condition: state
-                entity_id: !input button_2_light
-                state: "off"
-            sequence:
-              - service: light.turn_on
-                data:
-                  entity_id: !input button_2_light
-                  brightness_pct: 100
-                  transition: "{{ transition_time }}"
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '002' and button_action == 'KeyHeldDown' }}"
-    sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input button_2_light
-          brightness_pct: !input hold_brightness
-          transition: "{{ transition_time }}"
+      # Button 2 actions
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '002' and button_action == 'KeyPressed' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_2_light
+                    state: "on"
+                sequence:
+                  - service: light.turn_off
+                    data:
+                      entity_id: !input button_2_light
+                      transition: "{{ transition_time }}"
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_2_light
+                    state: "off"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      entity_id: !input button_2_light
+                      brightness_pct: 100
+                      transition: "{{ transition_time }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '002' and button_action == 'KeyHeldDown' }}"
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input button_2_light
+              brightness_pct: !input hold_brightness
+              transition: "{{ transition_time }}"
 
-  # Button 3 actions
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '003' and button_action == 'KeyPressed' }}"
-    sequence:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: !input button_3_light
-                state: "on"
-            sequence:
-              - service: light.turn_off
-                data:
-                  entity_id: !input button_3_light
-                  transition: "{{ transition_time }}"
-          - conditions:
-              - condition: state
-                entity_id: !input button_3_light
-                state: "off"
-            sequence:
-              - service: light.turn_on
-                data:
-                  entity_id: !input button_3_light
-                  brightness_pct: 100
-                  transition: "{{ transition_time }}"
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '003' and button_action == 'KeyHeldDown' }}"
-    sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input button_3_light
-          brightness_pct: !input hold_brightness
-          transition: "{{ transition_time }}"
+      # Button 3 actions
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '003' and button_action == 'KeyPressed' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_3_light
+                    state: "on"
+                sequence:
+                  - service: light.turn_off
+                    data:
+                      entity_id: !input button_3_light
+                      transition: "{{ transition_time }}"
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_3_light
+                    state: "off"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      entity_id: !input button_3_light
+                      brightness_pct: 100
+                      transition: "{{ transition_time }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '003' and button_action == 'KeyHeldDown' }}"
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input button_3_light
+              brightness_pct: !input hold_brightness
+              transition: "{{ transition_time }}"
 
-  # Button 4 actions
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '004' and button_action == 'KeyPressed' }}"
-    sequence:
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: !input button_4_light
-                state: "on"
-            sequence:
-              - service: light.turn_off
-                data:
-                  entity_id: !input button_4_light
-                  transition: "{{ transition_time }}"
-          - conditions:
-              - condition: state
-                entity_id: !input button_4_light
-                state: "off"
-            sequence:
-              - service: light.turn_on
-                data:
-                  entity_id: !input button_4_light
-                  brightness_pct: 100
-                  transition: "{{ transition_time }}"
-  - conditions:
-      - condition: template
-        value_template: "{{ button_id == '004' and button_action == 'KeyHeldDown' }}"
-    sequence:
-      - service: light.turn_on
-        data:
-          entity_id: !input button_4_light
-          brightness_pct: !input hold_brightness
-          transition: "{{ transition_time }}"
+      # Button 4 actions
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '004' and button_action == 'KeyPressed' }}"
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_4_light
+                    state: "on"
+                sequence:
+                  - service: light.turn_off
+                    data:
+                      entity_id: !input button_4_light
+                      transition: "{{ transition_time }}"
+              - conditions:
+                  - condition: state
+                    entity_id: !input button_4_light
+                    state: "off"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      entity_id: !input button_4_light
+                      brightness_pct: 100
+                      transition: "{{ transition_time }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ button_id == '004' and button_action == 'KeyHeldDown' }}"
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input button_4_light
+              brightness_pct: !input hold_brightness
+              transition: "{{ transition_time }}"
