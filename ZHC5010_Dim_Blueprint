@@ -41,12 +41,10 @@ blueprint:
 mode: single
 max_exceeded: silent
 trigger:
-  # Trigger on Central Scene events from the ZHC5010
   - platform: event
-    event_type: zwave_js_event
+    event_type: zwave_js_value_notification
     event_data:
       device_id: !input zhc5010_device
-      command_class_name: Central Scene
 
 variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
