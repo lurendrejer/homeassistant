@@ -63,7 +63,9 @@ condition:
 action:
   - choose:
       # Single button press toggles light
-      - conditions: "{{ button_action == 'KeyPressed' }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ button_action == 'KeyPressed' }}"
         sequence:
           - service: light.toggle
             data_template:
@@ -75,16 +77,18 @@ action:
                   100
                 {% endif %}
       # Button hold sets light to specified brightness
-      - conditions: "{{ button_action == 'KeyHeldDown' }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ button_action == 'KeyHeldDown' }}"
         sequence:
           - service: light.turn_on
             data:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
-  # Default action: Log unsupported button actions
-  default:
-    - service: system_log.write
-      data:
-        level: warning
-        message: >
-          Button "{{ button_id }}" on "{{ zhc5010_device }}" triggered unsupported action "{{ button_action }}".
+    default:
+      - service: system_log.write
+        data:
+          level: warning
+          message: >
+            Button "{{ button_id }}" on "{{ zhc5010_device }}" triggered unsupported action "{{ button_action }}".
+
