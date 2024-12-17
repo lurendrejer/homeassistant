@@ -1,34 +1,30 @@
 blueprint:
-  name: ZHC5010 Button Light Control (Multi)
-  description: Control a light with a selected button on the ZHC5010 using Z-Wave JS.
+  name: ZHC5010 Button Light Control
+  description: Control a light with a selected button on a ZHC5010 device using Z-Wave JS.
   domain: automation
   input:
     zhc5010_devices:
       name: ZHC5010 Devices
-      description: Select multiple ZHC5010 devices to use.
+      description: Select the ZHC5010 devices to use.
       selector:
         device:
           integration: zwave_js
           manufacturer: Logic Group
           model: ZHC5010
-          multiple: true
+      multiple: true
     target_light:
       name: Target Light
       description: Select the light to control.
       selector:
         entity:
           domain: light
-    selected_buttons:
-      name: Select Buttons
-      description: Choose the buttons to be used.
+    button:
+      name: ZHC5010 Button
+      description: Select which button on the ZHC5010 device to use.
       selector:
         select:
-          options:
-            - Button 1
-            - Button 2
-            - Button 3
-            - Button 4
-          multiple: true
+          options: []
+      multiple: true
     hold_brightness:
       name: Hold Brightness
       description: Brightness level to set when the button is held.
@@ -57,24 +53,25 @@ trigger:
   - platform: event
     event_type: zwave_js_value_notification
     event_data:
-      device_id: 
-        - !input zhc5010_devices
+      device_id: !input zhc5010_devices
 
 variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
   button_action: '{{ trigger.event.data.value }}'
-  selected_buttons: !input selected_buttons
+  selected_device: !input zhc5010_devices
+  selected_button: !input button
   hold_brightness: !input hold_brightness
   transition_time: !input transition_time
 
 condition:
-  # Ensure the event matches one of the selected buttons.
+  # Ensure the event matches the selected device and button.
   - condition: template
     value_template: >
-      {{ button_id in selected_buttons }}
+      {{ (selected_device == device_id and selected_button == button_id) }}
 
 action:
   - choose:
+      # Single button press toggles light brightness between 100% and 0%
       - conditions:
           - condition: template
             value_template: "{{ button_action == 'KeyPressed' }}"
@@ -100,6 +97,7 @@ action:
                       brightness_pct: 100
                       transition: "{{ transition_time }}"
 
+      # Button hold sets light to a specific brightness
       - conditions:
           - condition: template
             value_template: "{{ button_action == 'KeyHeldDown' }}"
@@ -109,4 +107,3 @@ action:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
               transition: "{{ transition_time }}"
-
