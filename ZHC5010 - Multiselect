@@ -3,23 +3,23 @@ blueprint:
   description: Control multiple lights with multiple ZHC5010 devices using Z-Wave JS.
   domain: automation
   input:
-    zhc5010_devices_on:
-      name: ZHC5010 Devices On
-      description: Select multiple ZHC5010 devices for on/off control.
+    zhc5010_devices:
+      name: ZHC5010 Devices
+      description: Select multiple ZHC5010 devices.
       selector:
         device:
           integration: zwave_js
           manufacturer: Logic Group
           model: ZHC5010
           multiple: true
-    zhc5010_devices_dim:
-      name: ZHC5010 Devices Dim
-      description: Select multiple ZHC5010 devices for dim control.
+    triggers:
+      name: Triggers
+      description: Select the triggers for each device.
       selector:
-        device:
-          integration: zwave_js
-          manufacturer: Logic Group
-          model: ZHC5010
+        select:
+          options:
+            - On
+            - Off
           multiple: true
     target_lights:
       name: Target Lights
@@ -58,31 +58,29 @@ trigger:
     event_data:
       device_id: 
         # This listens for any of the selected devices
-        - device_id for device in !input zhc5010_devices_on
-      trigger: 
-        - !input zhc5010_devices_on
+        - device_id for device in !input zhc5010_devices
 
 variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
   button_action: '{{ trigger.event.data.value }}'
-  selected_devices_on: !input zhc5010_devices_on
-  selected_devices_dim: !input zhc5010_devices_dim
+  selected_devices: !input zhc5010_devices
+  selected_triggers: !input triggers
   target_lights: !input target_lights
   dim_brightness: !input dim_brightness
   transition_time: !input transition_time
 
 condition:
-  # Ensure the event matches one of the selected devices.
+  # Ensure the event matches one of the selected devices and triggers.
   - condition: template
     value_template: >
-      {{ button_id in selected_devices_on or button_id in selected_devices_dim }}
+      {{ button_id in [device.id for device in selected_devices] and button_action in selected_triggers }}
 
 action:
   - choose:
       # Single button press toggles light brightness between 100% and 0%
       - conditions:
           - condition: template
-            value_template: "{{ button_action == 'KeyPressed' }}"
+            value_template: "{{ button_action == 'On' }}"
         sequence:
           - choose:
               - conditions:
@@ -108,7 +106,7 @@ action:
       # Button hold sets light to a specific brightness
       - conditions:
           - condition: template
-            value_template: "{{ button_action == 'KeyHeldDown' }}"
+            value_template: "{{ button_action == 'Off' }}"
         sequence:
           - service: light.turn_on
             data:
