@@ -93,25 +93,26 @@ action:
             value_template: "{{ button_action == 'KeyHeldDown' }}"
         sequence:
           - choose:
+              # Check if the light is on and if it is at the 'hold_brightness' level
               - conditions:
-                  - condition: state
-                    entity_id: !input target_light
-                    state: "on"
-                    attributes:
-                      brightness_pct: "{{ hold_brightness }}"
+                  - condition: template
+                    value_template: >
+                      {{ state_attr('!input target_light', 'brightness') == (hold_brightness * 255 / 100) }}
                 sequence:
                   - service: light.turn_on
                     data:
                       entity_id: !input target_light
                       brightness_pct: 100
               - conditions:
+                  # If the light is at 100%, set it back to 'hold_brightness'
                   - condition: state
                     entity_id: !input target_light
                     state: "on"
                     attributes:
-                      brightness_pct: 100
+                      brightness: 255
                 sequence:
                   - service: light.turn_on
                     data:
                       entity_id: !input target_light
                       brightness_pct: "{{ hold_brightness }}"
+
