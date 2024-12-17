@@ -57,9 +57,11 @@ trigger:
   - platform: event
     event_type: zwave_js_value_notification
     event_data:
-      device_id: 
-        # Match any of the selected ZHC5010 devices
-        in: !input zhc5010_devices | map(attribute='id') | list
+      # Use Jinja to extract the IDs of the selected devices
+      device_id: >
+        {% set selected_devices = expand(input.zh5010_devices) %}
+        {% set device_ids = selected_devices | map(attribute='id') | list %}
+        {{ device_ids }}
 
 variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
