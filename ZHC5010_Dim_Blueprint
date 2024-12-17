@@ -1,26 +1,26 @@
 blueprint:
   name: ZHC5010 Button Light Control
-  description: Control a light with a selected button on the ZHC5010 using Z-Wave JS.
+  description: Control lights with multiple selected buttons on the ZHC5010 using Z-Wave JS.
   domain: automation
   input:
-    zhc5010_device:
-      name: ZHC5010 Device
-      description: Select the ZHC5010 device to use.
+    zhc5010_devices:
+      name: ZHC5010 Devices
+      description: Select multiple ZHC5010 devices to use.
       selector:
         device:
           integration: zwave_js
-          multiple: true
           manufacturer: Logic Group
           model: ZHC5010
+          multiple: true
     target_light:
       name: Target Light
       description: Select the light to control.
       selector:
         entity:
           domain: light
-    button:
-      name: ZHC5010 Button
-      description: Select which button on the ZHC5010 to use.
+    selected_buttons:
+      name: Select Buttons
+      description: Choose the buttons to be used.
       selector:
         select:
           options:
@@ -57,23 +57,20 @@ trigger:
   - platform: event
     event_type: zwave_js_value_notification
     event_data:
-      device_id: !input zhc5010_device
+      device_id: !input zhc5010_devices
 
 variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
   button_action: '{{ trigger.event.data.value }}'
-  selected_button: !input button
+  selected_buttons: !input selected_buttons
   hold_brightness: !input hold_brightness
   transition_time: !input transition_time
 
 condition:
-  # Ensure the event matches the selected button.
+  # Ensure the event matches one of the selected buttons.
   - condition: template
     value_template: >
-      {{ (selected_button == 'Button 1' and button_id == '001') or
-         (selected_button == 'Button 2' and button_id == '002') or
-         (selected_button == 'Button 3' and button_id == '003') or
-         (selected_button == 'Button 4' and button_id == '004') }}
+      {{ button_id in selected_buttons }}
 
 action:
   - choose:
@@ -113,4 +110,3 @@ action:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
               transition: "{{ transition_time }}"
-
