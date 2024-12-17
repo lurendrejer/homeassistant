@@ -1,33 +1,37 @@
 blueprint:
-  name: Multi-Trigger Light Control
-  description: Control light based on multiple triggers for on/off and dim actions.
+  name: ZHC5010 Button Light Control
+  description: Control a light with selected buttons on the ZHC5010 using Z-Wave JS.
   domain: automation
   input:
-    on_off_triggers:
-      name: On/Off Triggers
-      description: Select devices and triggers for turning lights on or off.
+    zhc5010_devices:
+      name: ZHC5010 Devices
+      description: Select one or more ZHC5010 devices to use.
       selector:
-        device_trigger:
-          domain: light
-          type: power
-          multiple: true
-    dim_triggers:
-      name: Dim Triggers
-      description: Select devices and triggers for dimming lights.
-      selector:
-        device_trigger:
-          domain: light
-          type: brightness
-          multiple: true
+        device:
+          integration: zwave_js
+          manufacturer: Logic Group
+          model: ZHC5010
+          multiple: true  # Allows multiple device selection
     target_light:
       name: Target Light
       description: Select the light to control.
       selector:
         entity:
           domain: light
-    dim_brightness:
-      name: Dim Brightness Level
-      description: Brightness level to set when dimming.
+    buttons:
+      name: ZHC5010 Buttons
+      description: Select one or more buttons on the ZHC5010 to use.
+      selector:
+        select:
+          multiple: true  # Allows multiple button selection
+          options:
+            - Button 1
+            - Button 2
+            - Button 3
+            - Button 4
+    hold_brightness:
+      name: Hold Brightness
+      description: Brightness level to set when the button is held.
       default: 50
       selector:
         number:
@@ -49,88 +53,69 @@ blueprint:
 
 mode: single
 max_exceeded: silent
-
 trigger:
-  # Trigger for the on/off actions
-  - platform: device
-    device_id: !input on_off_triggers
-    domain: light
-    type: power
-    subtype: turned_on
-  - platform: device
-    device_id: !input on_off_triggers
-    domain: light
-    type: power
-    subtype: turned_off
-  # Trigger for the dimming actions
-  - platform: device
-    device_id: !input dim_triggers
-    domain: light
-    type: brightness
-    subtype: above
-    value: 0
-  - platform: device
-    device_id: !input dim_triggers
-    domain: light
-    type: brightness
-    subtype: below
-    value: 100
+  - platform: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: 
+        # Match any of the selected ZHC5010 devices
+        in: !input zhc5010_devices | map(attribute='id') | list
 
 variables:
+  button_id: '{{ trigger.event.data.property_key_name }}'
+  button_action: '{{ trigger.event.data.value }}'
+  selected_buttons: !input buttons  # A list of selected buttons
+  hold_brightness: !input hold_brightness
   transition_time: !input transition_time
-  dim_brightness: !input dim_brightness
+
+condition:
+  # Ensure the event matches one of the selected buttons
+  - condition: template
+    value_template: >
+      {{ button_id in
+         {
+           '001': 'Button 1',
+           '002': 'Button 2',
+           '003': 'Button 3',
+           '004': 'Button 4'
+         } | selectattr('value', 'in', selected_buttons) | map(attribute='key') | list
+      }}
 
 action:
-  # Action for turning the light on/off
   - choose:
+      # Handle the button press action (multiple buttons possible)
       - conditions:
-          - condition: trigger
-            id: "on_off_triggers"
-            type: power
-            subtype: turned_on
+          - condition: template
+            value_template: "{{ button_action == 'KeyPressed' }}"
         sequence:
-          - service: light.turn_on
-            data:
-              entity_id: !input target_light
-              brightness_pct: 100
-              transition: "{{ transition_time }}"
-      - conditions:
-          - condition: trigger
-            id: "on_off_triggers"
-            type: power
-            subtype: turned_off
-        sequence:
-          - service: light.turn_off
-            data:
-              entity_id: !input target_light
-              transition: "{{ transition_time }}"
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input target_light
+                    state: "on"
+                sequence:
+                  - service: light.turn_off
+                    data:
+                      entity_id: !input target_light
+                      transition: "{{ transition_time }}"
+              - conditions:
+                  - condition: state
+                    entity_id: !input target_light
+                    state: "off"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      entity_id: !input target_light
+                      brightness_pct: 100
+                      transition: "{{ transition_time }}"
 
-  # Action for dimming the light
-  - choose:
+      # Handle the button hold action (multiple buttons possible)
       - conditions:
-          - condition: trigger
-            id: "dim_triggers"
-            type: brightness
-            subtype: above
+          - condition: template
+            value_template: "{{ button_action == 'KeyHeldDown' }}"
         sequence:
           - service: light.turn_on
             data:
               entity_id: !input target_light
-              brightness_pct: "{{ dim_brightness }}"
+              brightness_pct: !input hold_brightness
               transition: "{{ transition_time }}"
-      - conditions:
-          - condition: trigger
-            id: "dim_triggers"
-            type: brightness
-            subtype: below
-        sequence:
-          - service: light.turn_on
-            data:
-              entity_id: !input target_light
-              brightness_pct: 0
-              transition: "{{ transition_time }}"
-  default:
-    - service: system_log.write
-      data:
-        level: warning
-        message: "An unsupported trigger was activated."
