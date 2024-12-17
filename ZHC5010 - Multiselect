@@ -75,4 +75,32 @@ trigger:
 
 variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
-  but
+  button_action: '{{ trigger.event.data.value }}'
+  hold_brightness: !input hold_brightness
+  transition_time: !input transition_time
+
+action:
+  # Button 1 actions
+  - conditions:
+      - condition: template
+        value_template: "{{ button_id == '001' and button_action == 'KeyPressed' }}"
+    sequence:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: !input button_1_light
+                state: "on"
+            sequence:
+              - service: light.turn_off
+                data:
+                  entity_id: !input button_1_light
+                  transition: "{{ transition_time }}"
+          - conditions:
+              - condition: state
+                entity_id: !input button_1_light
+                state: "off"
+            sequence:
+              - service: light.turn_on
+                data:
+                  entity_id: !input button_1_light
+       
