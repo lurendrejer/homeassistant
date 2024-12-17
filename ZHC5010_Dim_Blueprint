@@ -1,6 +1,6 @@
 blueprint:
   name: ZHC5010 Button Light Control
-  description: Control lights with multiple selected buttons on the ZHC5010 using Z-Wave JS.
+  description: Control a light with a selected button on the ZHC5010 using Z-Wave JS.
   domain: automation
   input:
     zhc5010_devices:
@@ -57,7 +57,9 @@ trigger:
   - platform: event
     event_type: zwave_js_value_notification
     event_data:
-      device_id: !input zhc5010_devices
+      device_id: 
+        # This listens for any of the selected devices
+        - !input zhc5010_devices
 
 variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
@@ -110,3 +112,9 @@ action:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
               transition: "{{ transition_time }}"
+  default:
+    - service: system_log.write
+      data:
+        level: warning
+        message: >
+          Button "{{ button_id }}" on "{{ zhc5010_device }}" triggered unsupported action "{{ button_action }}".
