@@ -62,21 +62,30 @@ condition:
 
 action:
   - choose:
-      # Single button press toggles light
+      # Single button press toggles light brightness between 100% and 0%
       - conditions:
           - condition: template
             value_template: "{{ button_action == 'KeyPressed' }}"
         sequence:
-          - service: light.toggle
-            data_template:
-              entity_id: !input target_light
-              brightness_pct: >
-                {% if is_state(target_light, 'on') %}
-                  0
-                {% else %}
-                  100
-                {% endif %}
-      # Button hold sets light to specified brightness
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input target_light
+                    state: "on"
+                sequence:
+                  - service: light.turn_off
+                    data:
+                      entity_id: !input target_light
+              - conditions:
+                  - condition: state
+                    entity_id: !input target_light
+                    state: "off"
+                sequence:
+                  - service: light.turn_on
+                    data:
+                      entity_id: !input target_light
+                      brightness_pct: 100
+      # Button hold sets light to a specific brightness
       - conditions:
           - condition: template
             value_template: "{{ button_action == 'KeyHeldDown' }}"
@@ -85,3 +94,4 @@ action:
             data:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
+
