@@ -1,28 +1,33 @@
 blueprint:
-  name: Trigger Light Control
-  description: Control multiple lights with multiple triggers using Z-Wave JS.
+  name: Multi-Trigger Light Control
+  description: Control light based on multiple triggers for on/off and dim actions.
   domain: automation
   input:
-    triggers:
-      name: Triggers
-      description: Select the triggers for on/off and dim control.
+    on_off_triggers:
+      name: On/Off Triggers
+      description: Select devices and triggers for turning lights on or off.
       selector:
-        select:
-          options:
-            - On
-            - Off
-            - Dim
+        device_trigger:
+          domain: light
+          type: power
           multiple: true
-    target_lights:
-      name: Target Lights
-      description: Select multiple target lights to control.
+    dim_triggers:
+      name: Dim Triggers
+      description: Select devices and triggers for dimming lights.
+      selector:
+        device_trigger:
+          domain: light
+          type: brightness
+          multiple: true
+    target_light:
+      name: Target Light
+      description: Select the light to control.
       selector:
         entity:
           domain: light
-          multiple: true
     dim_brightness:
-      name: Dim Brightness
-      description: Set the dim brightness level.
+      name: Dim Brightness Level
+      description: Brightness level to set when dimming.
       default: 50
       selector:
         number:
@@ -44,29 +49,88 @@ blueprint:
 
 mode: single
 max_exceeded: silent
+
 trigger:
-  - platform: event
-    event_type: zwave_js_value_notification
-    event_data:
-      trigger: 
-        # This listens for any of the selected triggers
-        - trigger for trigger in !input triggers
+  # Trigger for the on/off actions
+  - platform: device
+    device_id: !input on_off_triggers
+    domain: light
+    type: power
+    subtype: turned_on
+  - platform: device
+    device_id: !input on_off_triggers
+    domain: light
+    type: power
+    subtype: turned_off
+  # Trigger for the dimming actions
+  - platform: device
+    device_id: !input dim_triggers
+    domain: light
+    type: brightness
+    subtype: above
+    value: 0
+  - platform: device
+    device_id: !input dim_triggers
+    domain: light
+    type: brightness
+    subtype: below
+    value: 100
 
 variables:
-  trigger: '{{ trigger.event.data.value }}'
-  target_lights: !input target_lights
-  dim_brightness: !input dim_brightness
   transition_time: !input transition_time
-
-condition:
-  # Ensure the event matches one of the selected triggers.
-  - condition: template
-    value_template: >
-      {{ trigger in ['On', 'Off', 'Dim'] }}
+  dim_brightness: !input dim_brightness
 
 action:
+  # Action for turning the light on/off
   - choose:
-      # Single button press toggles light brightness between 100% and 0%
       - conditions:
-          - condition: template
-            value
+          - condition: trigger
+            id: "on_off_triggers"
+            type: power
+            subtype: turned_on
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input target_light
+              brightness_pct: 100
+              transition: "{{ transition_time }}"
+      - conditions:
+          - condition: trigger
+            id: "on_off_triggers"
+            type: power
+            subtype: turned_off
+        sequence:
+          - service: light.turn_off
+            data:
+              entity_id: !input target_light
+              transition: "{{ transition_time }}"
+
+  # Action for dimming the light
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "dim_triggers"
+            type: brightness
+            subtype: above
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input target_light
+              brightness_pct: "{{ dim_brightness }}"
+              transition: "{{ transition_time }}"
+      - conditions:
+          - condition: trigger
+            id: "dim_triggers"
+            type: brightness
+            subtype: below
+        sequence:
+          - service: light.turn_on
+            data:
+              entity_id: !input target_light
+              brightness_pct: 0
+              transition: "{{ transition_time }}"
+  default:
+    - service: system_log.write
+      data:
+        level: warning
+        message: "An unsupported trigger was activated."
