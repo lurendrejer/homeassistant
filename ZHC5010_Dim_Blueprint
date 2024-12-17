@@ -58,7 +58,6 @@ trigger:
     event_type: zwave_js_value_notification
     event_data:
       device_id: 
-        # This listens for any of the selected devices
         - !input zhc5010_devices
 
 variables:
@@ -76,7 +75,6 @@ condition:
 
 action:
   - choose:
-      # Single button press toggles light brightness between 100% and 0%
       - conditions:
           - condition: template
             value_template: "{{ button_action == 'KeyPressed' }}"
@@ -102,7 +100,6 @@ action:
                       brightness_pct: 100
                       transition: "{{ transition_time }}"
 
-      # Button hold sets light to a specific brightness
       - conditions:
           - condition: template
             value_template: "{{ button_action == 'KeyHeldDown' }}"
@@ -112,3 +109,10 @@ action:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
               transition: "{{ transition_time }}"
+
+  default:
+    - service: system_log.write
+      data:
+        level: warning
+        message: >
+          Button "{{ button_id }}" on "{{ zhc5010_devices }}" triggered unsupported action "{{ button_action }}".
