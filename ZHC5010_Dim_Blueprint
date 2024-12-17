@@ -29,7 +29,7 @@ blueprint:
             - Button 4
     hold_brightness:
       name: Hold Brightness
-      description: Brightness level to toggle between 100% and this level when the button is held.
+      description: Brightness level to set when the button is held.
       default: 50
       selector:
         number:
@@ -50,7 +50,6 @@ variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
   button_action: '{{ trigger.event.data.value }}'
   selected_button: !input button
-  hold_brightness: !input hold_brightness
 
 condition:
   # Ensure the event matches the selected button.
@@ -86,33 +85,12 @@ action:
                     data:
                       entity_id: !input target_light
                       brightness_pct: 100
-
-      # Button hold toggles light between hold_brightness and 100%
+      # Button hold sets light to a specific brightness
       - conditions:
           - condition: template
             value_template: "{{ button_action == 'KeyHeldDown' }}"
         sequence:
-          - choose:
-              # Check if the light is on and if it is at the 'hold_brightness' level
-              - conditions:
-                  - condition: template
-                    value_template: >
-                      {{ state_attr('!input target_light', 'brightness') == (hold_brightness * 255 / 100) }}
-                sequence:
-                  - service: light.turn_on
-                    data:
-                      entity_id: !input target_light
-                      brightness_pct: 100
-              - conditions:
-                  # If the light is at 100%, set it back to 'hold_brightness'
-                  - condition: state
-                    entity_id: !input target_light
-                    state: "on"
-                    attributes:
-                      brightness: 255
-                sequence:
-                  - service: light.turn_on
-                    data:
-                      entity_id: !input target_light
-                      brightness_pct: "{{ hold_brightness }}"
-
+          - service: light.turn_on
+            data:
+              entity_id: !input target_light
+              brightness_pct: !input hold_brightness
