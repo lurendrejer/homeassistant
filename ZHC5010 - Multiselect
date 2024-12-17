@@ -1,25 +1,17 @@
 blueprint:
-  name: ZHC5010 Button Light Control
-  description: Control multiple lights with multiple ZHC5010 devices using Z-Wave JS.
+  name: Trigger Light Control
+  description: Control multiple lights with multiple triggers using Z-Wave JS.
   domain: automation
   input:
-    zhc5010_devices:
-      name: ZHC5010 Devices
-      description: Select multiple ZHC5010 devices.
-      selector:
-        device:
-          integration: zwave_js
-          manufacturer: Logic Group
-          model: ZHC5010
-          multiple: true
     triggers:
       name: Triggers
-      description: Select the triggers for each device.
+      description: Select the triggers for on/off and dim control.
       selector:
         select:
           options:
             - On
             - Off
+            - Dim
           multiple: true
     target_lights:
       name: Target Lights
@@ -56,60 +48,25 @@ trigger:
   - platform: event
     event_type: zwave_js_value_notification
     event_data:
-      device_id: 
-        # This listens for any of the selected devices
-        - device_id for device in !input zhc5010_devices
+      trigger: 
+        # This listens for any of the selected triggers
+        - trigger for trigger in !input triggers
 
 variables:
-  button_id: '{{ trigger.event.data.property_key_name }}'
-  button_action: '{{ trigger.event.data.value }}'
-  selected_devices: !input zhc5010_devices
-  selected_triggers: !input triggers
+  trigger: '{{ trigger.event.data.value }}'
   target_lights: !input target_lights
   dim_brightness: !input dim_brightness
   transition_time: !input transition_time
 
 condition:
-  # Ensure the event matches one of the selected devices and triggers.
+  # Ensure the event matches one of the selected triggers.
   - condition: template
     value_template: >
-      {{ button_id in [device.id for device in selected_devices] and button_action in selected_triggers }}
+      {{ trigger in ['On', 'Off', 'Dim'] }}
 
 action:
   - choose:
       # Single button press toggles light brightness between 100% and 0%
       - conditions:
           - condition: template
-            value_template: "{{ button_action == 'On' }}"
-        sequence:
-          - choose:
-              - conditions:
-                  - condition: state
-                    entity_id: !input target_lights
-                    state: "on"
-                sequence:
-                  - service: light.turn_off
-                    data:
-                      entity_id: !input target_lights
-                      transition: "{{ transition_time }}"
-              - conditions:
-                  - condition: state
-                    entity_id: !input target_lights
-                    state: "off"
-                sequence:
-                  - service: light.turn_on
-                    data:
-                      entity_id: !input target_lights
-                      brightness_pct: 100
-                      transition: "{{ transition_time }}"
-
-      # Button hold sets light to a specific brightness
-      - conditions:
-          - condition: template
-            value_template: "{{ button_action == 'Off' }}"
-        sequence:
-          - service: light.turn_on
-            data:
-              entity_id: !input target_lights
-              brightness_pct: !input dim_brightness
-              transition: "{{ transition_time }}"
+            value
