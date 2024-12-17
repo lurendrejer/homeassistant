@@ -18,7 +18,6 @@ blueprint:
         entity:
           domain: light
           multiple: false
-          optional: true  # Make it optional
     button_2_light:
       name: Button 2 Light
       description: Select the light to control with Button 2 (optional).
@@ -26,7 +25,6 @@ blueprint:
         entity:
           domain: light
           multiple: false
-          optional: true  # Make it optional
     button_3_light:
       name: Button 3 Light
       description: Select the light to control with Button 3 (optional).
@@ -34,7 +32,6 @@ blueprint:
         entity:
           domain: light
           multiple: false
-          optional: true  # Make it optional
     button_4_light:
       name: Button 4 Light
       description: Select the light to control with Button 4 (optional).
@@ -42,7 +39,6 @@ blueprint:
         entity:
           domain: light
           multiple: false
-          optional: true  # Make it optional
     hold_brightness:
       name: Hold Brightness
       description: Brightness level to set when the button is held.
