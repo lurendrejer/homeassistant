@@ -110,7 +110,7 @@ action:
               brightness_pct: !input hold_brightness
               transition: "{{ transition_time }}"
 
-  default:
+default:
     - service: system_log.write
       data:
         level: warning
