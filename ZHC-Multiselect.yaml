@@ -17,24 +17,32 @@ blueprint:
       selector:
         entity:
           domain: light
+          multiple: false
+          allow_empty: true
     button_2_light:
       name: Button 2 Light
       description: Select the light to control with Button 2 (optional).
       selector:
         entity:
           domain: light
+          multiple: false
+          allow_empty: true
     button_3_light:
       name: Button 3 Light
       description: Select the light to control with Button 3 (optional).
       selector:
         entity:
           domain: light
+          multiple: false
+          allow_empty: true
     button_4_light:
       name: Button 4 Light
       description: Select the light to control with Button 4 (optional).
       selector:
         entity:
           domain: light
+          multiple: false
+          allow_empty: true
     hold_brightness:
       name: Hold Brightness
       description: Brightness level to set when the button is held.
