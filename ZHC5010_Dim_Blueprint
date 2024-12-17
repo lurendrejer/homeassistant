@@ -85,7 +85,7 @@ action:
             data:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
-    default:
+default:
       - service: system_log.write
         data:
           level: warning
