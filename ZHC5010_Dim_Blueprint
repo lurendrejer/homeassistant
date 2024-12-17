@@ -9,6 +9,7 @@ blueprint:
       selector:
         device:
           integration: zwave_js
+          multiple: true
           manufacturer: Logic Group
           model: ZHC5010
     target_light:
@@ -27,6 +28,7 @@ blueprint:
             - Button 2
             - Button 3
             - Button 4
+          multiple: true
     hold_brightness:
       name: Hold Brightness
       description: Brightness level to set when the button is held.
