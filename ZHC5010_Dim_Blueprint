@@ -112,9 +112,3 @@ action:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
               transition: "{{ transition_time }}"
-  default:
-    - service: system_log.write
-      data:
-        level: warning
-        message: >
-          Button "{{ button_id }}" on "{{ zhc5010_devices }}" triggered unsupported action "{{ button_action }}".
