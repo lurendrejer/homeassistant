@@ -37,6 +37,17 @@ blueprint:
           max: 100
           unit_of_measurement: "%"
           mode: slider
+    transition_time:
+      name: Transition Time
+      description: Set the transition speed (in seconds) for light changes.
+      default: 1.0
+      selector:
+        number:
+          min: 0
+          max: 10
+          unit_of_measurement: "s"
+          mode: slider
+          step: 0.1
 
 mode: single
 max_exceeded: silent
@@ -50,6 +61,8 @@ variables:
   button_id: '{{ trigger.event.data.property_key_name }}'
   button_action: '{{ trigger.event.data.value }}'
   selected_button: !input button
+  hold_brightness: !input hold_brightness
+  transition_time: !input transition_time
 
 condition:
   # Ensure the event matches the selected button.
@@ -76,6 +89,7 @@ action:
                   - service: light.turn_off
                     data:
                       entity_id: !input target_light
+                      transition: "{{ transition_time }}"
               - conditions:
                   - condition: state
                     entity_id: !input target_light
@@ -85,6 +99,8 @@ action:
                     data:
                       entity_id: !input target_light
                       brightness_pct: 100
+                      transition: "{{ transition_time }}"
+
       # Button hold sets light to a specific brightness
       - conditions:
           - condition: template
@@ -94,3 +110,5 @@ action:
             data:
               entity_id: !input target_light
               brightness_pct: !input hold_brightness
+              transition: "{{ transition_time }}"
+
