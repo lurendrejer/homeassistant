@@ -117,4 +117,4 @@ action:
       data:
         level: warning
         message: >
-          Button "{{ button_id }}" on "{{ zhc5010_device }}" triggered unsupported action "{{ button_action }}".
+          Button "{{ button_id }}" on "{{ zhc5010_devices }}" triggered unsupported action "{{ button_action }}".
