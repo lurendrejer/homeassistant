@@ -14,24 +14,28 @@ blueprint:
     button_1_light:
       name: Button 1 Light
       description: Select the light to control with Button 1 (optional).
+      default:
       selector:
         entity:
           domain: light
     button_2_light:
       name: Button 2 Light
       description: Select the light to control with Button 2 (optional).
+      default:
       selector:
         entity:
           domain: light
     button_3_light:
       name: Button 3 Light
       description: Select the light to control with Button 3 (optional).
+      default:
       selector:
         entity:
           domain: light
     button_4_light:
       name: Button 4 Light
       description: Select the light to control with Button 4 (optional).
+      default:
       selector:
         entity:
           domain: light
